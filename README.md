@@ -33,12 +33,12 @@ non_genre();
 一度に全部落とそうとすると長時間かかるためサーバーエラーにあう確率が上がります。なので、その様な場合は分割してデータを取得してみてください。
 
 ## トラブルシューティング
-ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response',))
+###ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response',))
 サーバーからエラーが帰って来ているということです。
 
 リクエストの間隔をあけるためのsleep関数に使っている　datetime=1 の数字を大きくしてください。
 
-「pandas」が見つからないというエラーが出る。
+###「pandas」が見つからないというエラーが出る。
 
 pip install pandas
 
