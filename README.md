@@ -1,5 +1,5 @@
 # NarouDataAllDownLoad
-なろうAPIから全ての作品情報を一括取得するPythonスプリクト
+なろう小説APIから全ての作品情報を一括取得するPythonスプリクト
 
 
 ## 準備
