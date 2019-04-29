@@ -1,0 +1,2 @@
+# NarouDataAllDownLoad
+なろうAPIから全ての作品情報を一括取得するPythonスプリクト
