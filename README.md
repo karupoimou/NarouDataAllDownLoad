@@ -22,6 +22,16 @@ filename ='All_OUTPUT.xlsx'
 
 なお出力されるまでには早くても約半日ほどかかります。
 
+### 分割してデータを取得する方法
+コードの下の方に「実行する関数をここで指定する」というとこにある。
+
+major_genre();
+minor_genre();
+non_genre();
+
+のコードを適宜コメントアウトすることで、ファイルを一つにまとめずに、１つずつ分けて取得する事もできます。
+一度に全部落とそうとすると長時間かかるためサーバーエラーにあう確率が上がります。なので、その様な場合は分割してデータを取得してみてください。
+
 ## トラブルシューティング
 ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response',))
 サーバーからエラーが帰って来ているということです。
