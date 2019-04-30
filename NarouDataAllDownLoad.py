@@ -9,7 +9,7 @@ import datetime
 filename ='All_OUTPUT_BC.xlsx'
 
 #リクエストの秒数間隔。「1」を推奨
-interval=0.1
+interval=1
 
 #各情報を一時的に保存していくための配列
 title_list=[];ncode_list=[];userid_list=[];writer_list=[];story_list=[];biggenre_list=[];genre_list=[];gensaku_list=[];
