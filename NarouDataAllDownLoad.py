@@ -9,7 +9,7 @@ import datetime
 filename ='Narou_All_OUTPUT.xlsx'
 
 #リクエストの秒数間隔。「1」を推奨
-interval=0.1
+interval=1
 
 #各情報を一時的に保存していくための配列
 title_list=[];ncode_list=[];userid_list=[];writer_list=[];story_list=[];biggenre_list=[];genre_list=[];gensaku_list=[];
@@ -18,7 +18,10 @@ length_list=[];time_list=[];isstop_list=[];isr15_list=[];isbl_list=[];isgl_list=
 istenni_list=[];pc_or_k_list=[];global_point_list=[];fav_novel_cnt_list=[];review_cnt_list=[];all_point_list=[];
 all_hyoka_cnt_list=[];sasie_cnt_list=[];kaiwaritu_list=[];novelupdated_at_list=[];updated_at_list=[];weekly_list=[];
 
-#リスト途中経過を見るため
+#出力の際の項目名を指定
+column_name = ['title','ncode','userid','writer','story','biggenre','genre','gensaku','keyword','general_firstup','general_lastup','novel_type','end','general_all_no','length','time','isstop','isr15','isbl','isgl','iszankoku','istensei','istenni','pc_or_k','global_point','fav_novel_cnt','review_cnt','all_point','all_hyoka_cnt','sasie_cnt','kaiwaritu','novelupdated_at','updated_at','weekly_unique']
+
+#リスト途中経過を見るための変数
 processed_num=0;
 
 #　GETパラメータ　詳しくは「なろうディベロッパー」を参照
@@ -206,7 +209,7 @@ exportlist.append(updated_at_list)
 exportlist.append(weekly_list)
 
 #pandasのデータフレームに収納 
-df = pd.DataFrame(exportlist)
+df = pd.DataFrame(exportlist, index=column_name)#pandasのデータフレームに収納 
 
 # xlsx ファイル出力
 writer = pd.ExcelWriter(filename,options={'strings_to_urls': False})
