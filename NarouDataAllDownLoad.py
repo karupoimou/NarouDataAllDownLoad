@@ -16,7 +16,7 @@ title_list=[];ncode_list=[];userid_list=[];writer_list=[];story_list=[];biggenre
 keyword_list=[];general_firstup_list=[];general_lastup_list=[];novel_type_list=[];end_list=[];general_all_no_list=[];
 length_list=[];time_list=[];isstop_list=[];isr15_list=[];isbl_list=[];isgl_list=[];iszankoku_list=[];istensei_list=[];
 istenni_list=[];pc_or_k_list=[];global_point_list=[];fav_novel_cnt_list=[];review_cnt_list=[];all_point_list=[];
-all_hyoka_cnt_list=[];sasie_cnt_list=[];kaiwaritu_list=[];novelupdated_at_list=[];updated_at_list=[];weekly_list=[];
+all_hyoka_cnt_list=[];sasie_cnt_list=[];kaiwaritu_list=[];novelupdated_at_list=[];updated_at_list=[];weekly_unique_list=[];
 
 #出力の際の項目名を指定
 column_name = ['title','ncode','userid','writer','story','biggenre','genre','gensaku','keyword','general_firstup','general_lastup','novel_type','end','general_all_no','length','time','isstop','isr15','isbl','isgl','iszankoku','istensei','istenni','pc_or_k','global_point','fav_novel_cnt','review_cnt','all_point','all_hyoka_cnt','sasie_cnt','kaiwaritu','novelupdated_at','updated_at','weekly_unique']
@@ -83,7 +83,7 @@ def dumplist(r):
             kaiwaritu_list.append(data['kaiwaritu'])
             novelupdated_at_list.append(data['novelupdated_at'])
             updated_at_list.append(data['updated_at'])
-            weekly_list.append(data['weekly'])
+            weekly_list.append(data['weekly_unique'])
         except KeyError:
             pass
         
@@ -206,7 +206,7 @@ exportlist.append(sasie_cnt_list)
 exportlist.append(kaiwaritu_list)
 exportlist.append(novelupdated_at_list)
 exportlist.append(updated_at_list)
-exportlist.append(weekly_list)
+exportlist.append(weekly_unique_list)
 
 #pandasのデータフレームに収納 
 df = pd.DataFrame(exportlist, index=column_name)#pandasのデータフレームに収納 
