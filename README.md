@@ -18,7 +18,7 @@ Anacondaのjupyter notebookやPython3.5で.pyを実行してください。
 #出力ファイル名
 filename ='All_OUTPUT.xlsx'
 
-で指定したエクセルファイルが出力されます。
+で指定したエクセルファイルが出力されます。約200MB。
 
 なお出力されるまでには早くても約半日ほどかかります。
 
