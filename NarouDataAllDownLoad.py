@@ -205,8 +205,8 @@ exportlist.append(updated_at_list)
 df = pd.DataFrame(exportlist)
 
 # xlsx ファイル出力
-writer = pd.ExcelWriter(filename)
-df.T.to_excel(writer, sheet_name="sheet1",options={'strings_to_urls': False})#Writerを通して書き込み
+writer = pd.ExcelWriter(filename,options={'strings_to_urls': False})
+df.T.to_excel(writer, sheet_name="sheet1")#Writerを通して書き込み
 writer.close()
 
 record_time('Completed');#処理終了時刻
