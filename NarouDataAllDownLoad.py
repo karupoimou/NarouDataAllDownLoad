@@ -4,12 +4,13 @@ import pandas as pd
 import json
 import time as tm
 import datetime
+import gzip
 
 #出力ファイル名
 filename ='Narou_All_OUTPUT.xlsx'
 
 #リクエストの秒数間隔。「1」を推奨
-interval=1
+interval=0.1
 
 #各情報を一時的に保存していくための配列
 title_list=[];ncode_list=[];userid_list=[];writer_list=[];story_list=[];biggenre_list=[];genre_list=[];gensaku_list=[];
@@ -47,7 +48,7 @@ def record_time(s):
     print(s+" "+nowtime)
 
 #書き込み処理の関数
-def dumplist(r):
+def dump_to_list(r):
     for data in json.loads(r):
         try:            
             title_list.append(data['title'])
@@ -122,11 +123,12 @@ def major_genre():
                 print(gen+" "+kai+" "+leng)#進行状況の表示
                 
                 for sts in st_set:
-                    payload = {'out': 'json','opt':'weekly','lim':500,'genre':gen,'kaiwaritu':kai,'length':leng,'st':sts}
-                    r = requests.get('https://api.syosetu.com/novelapi/api/', params=payload).text
-                    dumplist(r);                    
+                    payload = {'out': 'json','gzip':5,'opt':'weekly','lim':500,'genre':gen,'kaiwaritu':kai,'length':leng,'st':sts}
+                    res = requests.get('https://api.syosetu.com/novelapi/api/', params=payload).content
+                    r =  gzip.decompress(res).decode("utf-8")
+                    dump_to_list(r);                    
                     tm.sleep(interval);
-                    #print(r +" "+gen+" "+kai+" "+leng)
+                    
                     
 #マイナージャンルの作品情報を取得する関数    
 def minor_genre():
@@ -137,11 +139,12 @@ def minor_genre():
             for sho in shousetu_type_set:
                 print(gen+" "+leng+" "+sho)#進行状況の表示
                 for sts in st_set:
-                    payload = {'out': 'json','opt':'weekly','lim':500,'genre':gen,'length':leng,'type':sho,'st':sts}
-                    r = requests.get('https://api.syosetu.com/novelapi/api/', params=payload).text
-                    dumplist(r);
+                    payload = {'out': 'json','gzip':5,'opt':'weekly','lim':500,'genre':gen,'length':leng,'type':sho,'st':sts}
+                    res = requests.get('https://api.syosetu.com/novelapi/api/', params=payload).content
+                    r =  gzip.decompress(res).decode("utf-8")
+                    dump_to_list(r);
                     tm.sleep(interval);
-                    #print(r +" "+gen+" "+leng)
+                   
                     
 #『ノンジャンル：9801』の作品情報を取得する関数    
 def non_genre():
@@ -154,9 +157,10 @@ def non_genre():
                 
                 for sho in shousetu_type_set:
                     for sts in st_set:
-                        payload = {'out': 'json','opt':'weekly','lim':500,'genre':gen,'kaiwaritu':kai,'length':leng,'type':sho,'st':sts}
-                        r = requests.get('https://api.syosetu.com/novelapi/api/', params=payload).text
-                        dumplist(r);
+                        payload = {'out': 'json','gzip':5,'opt':'weekly','lim':500,'genre':gen,'kaiwaritu':kai,'length':leng,'type':sho,'st':sts}
+                        res = requests.get('https://api.syosetu.com/novelapi/api/', params=payload).content
+                        r =  gzip.decompress(res).decode("utf-8")
+                        dump_to_list(r);
                         tm.sleep(interval);
                         #print(r +" "+gen+" "+kai+" "+leng+" "+sho)
 
@@ -171,7 +175,7 @@ minor_genre();
 non_genre();
 
 ############最終書き込み処理#################
-print('export processing now')
+record_time('export processing now');#処理終了時刻
 exportlist=[]
 exportlist.append(title_list)
 exportlist.append(ncode_list)
