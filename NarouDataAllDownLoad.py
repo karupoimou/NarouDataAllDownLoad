@@ -6,10 +6,10 @@ import time as tm
 import datetime
 
 #出力ファイル名
-filename ='All_OUTPUT.xlsx'
+filename ='All_OUTPUT_BC.xlsx'
 
 #リクエストの秒数間隔。「1」を推奨
-interval=1
+interval=0.1
 
 #各情報を一時的に保存していくための配列
 title_list=[];ncode_list=[];userid_list=[];writer_list=[];story_list=[];biggenre_list=[];genre_list=[];gensaku_list=[];
@@ -200,7 +200,13 @@ exportlist.append(sasie_cnt_list)
 exportlist.append(kaiwaritu_list)
 exportlist.append(novelupdated_at_list)
 exportlist.append(updated_at_list)
-df = pd.DataFrame(exportlist)#pandasのデータフレームに収納 
+
+#pandasのデータフレームに収納 
+df = pd.DataFrame(exportlist)
+
 # xlsx ファイル出力
-df.T.to_excel(filename, sheet_name='sheet1');
+writer = pd.ExcelWriter(filename,)
+df.T.to_excel(writer, sheet_name="sheet1",options={'strings_to_urls': False})#Writerを通して書き込み
+writer.close()
+
 record_time('Completed');#処理終了時刻
