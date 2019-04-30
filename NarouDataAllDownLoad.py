@@ -6,7 +6,7 @@ import time as tm
 import datetime
 
 #出力ファイル名
-filename ='All_OUTPUT_BC.xlsx'
+filename ='All_OUTPUT.xlsx'
 
 #リクエストの秒数間隔。「1」を推奨
 interval=1
@@ -205,7 +205,7 @@ exportlist.append(updated_at_list)
 df = pd.DataFrame(exportlist)
 
 # xlsx ファイル出力
-writer = pd.ExcelWriter(filename,)
+writer = pd.ExcelWriter(filename)
 df.T.to_excel(writer, sheet_name="sheet1",options={'strings_to_urls': False})#Writerを通して書き込み
 writer.close()
 
