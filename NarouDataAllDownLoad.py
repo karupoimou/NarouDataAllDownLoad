@@ -9,8 +9,8 @@ import gzip
 #出力ファイル名
 filename ='Narou_All_OUTPUT.xlsx'
 
-#リクエストの秒数間隔。「1」を推奨
-interval=0.1
+#リクエストの秒数間隔
+interval=1
 
 #各情報を一時的に保存していくための配列
 title_list=[];ncode_list=[];userid_list=[];writer_list=[];story_list=[];biggenre_list=[];genre_list=[];gensaku_list=[];
@@ -33,9 +33,9 @@ genre_setC = ['9801']
 kaiwa_setA = ['0','1-10','11-20','21-30','31-40','41-50','51-70','71-100']
 kaiwa_setC = ['0','1-3','4-6','7-10','11-15','16-20','21-25','26-30','31-35','36-40','41-45','46-50','51-55','56-60','61-70','71-80','81-90','91-99','100']
 
-length_setA = ['-199','200','201-210','211-220','221-230','231-260','261-300','301-500','501-1000','1001-1500','1501-2000','2001-3000','3001-5000','5001-7000','7001-10000','10001-20000','20001-30000','30001-50000','50001-100000','100001-500000','500001-']
-length_setB = ['-199','200','201-250','251-300','301-1000','1001-2000','2001-3000','3001-5000','5001-10000','10001-30000','30001-50000','50001-100000','100001-']
-length_setC = ['-199','200','201-203','204-205','206-210','211-220','221-230','231-240','241-250','251-260','261-271','271-280','281-290','291-300','301-320','321-340','341-350','351-370','371-400','401-430','431-470','471-500','501-550','551-600','601-650','651-700','701-750','751-800','801-900','901-1000','1001-1100','1101-1300','1301-1600','1601-2000','2001-2500','2501-3000','3001-3500','3501-4000','4001-5000','5001-6500','6501-8000','8001-9000','9001-10000','10001-15000','15001-20000','20001-30000','30001-40000','40001-50000','50001-100000','100001-120000','120001-200000','200001-500000','500001-']
+length_setA = ['-199','200','201-210','211-220','221-230','231-260','261-300','301-500','501-700','701-1000','1001-1300','1301-1500','1501-2000','2001-3000','3001-5000','5001-7000','7001-10000','10001-13000','13001-16000','16001-20000','20001-30000','30001-50000','50001-100000','100001-500000','500001-1000000','1000001-3000000','3000001-10000000','10000001-']
+length_setB = ['-199','200','201-250','251-300','301-1000','1001-2000','2001-3000','3001-5000','5001-10000','10001-30000','30001-50000','50001-100000','100001-500000','500001-']
+length_setC = ['-199','200','201-203','204-205','206-210','211-220','221-230','231-240','241-250','251-260','261-271','271-280','281-290','291-300','301-320','321-340','341-350','351-370','371-400','401-430','431-470','471-500','501-550','551-600','601-650','651-700','701-750','751-800','801-900','901-1000','1001-1100','1101-1300','1301-1600','1601-2000','2001-2500','2501-3000','3001-3500','3501-4000','4001-5000','5001-6500','6501-8000','8001-9000','9001-10000','10001-15000','15001-20000','20001-30000','30001-40000','40001-50000','50001-100000','100001-120000','120001-200000','200001-500000','500001-1000000','1000001-']
 
 shousetu_type_set =['t','r','er']
 st_set = [1,501,1001,1501]
@@ -119,15 +119,16 @@ def major_genre():
         genre_count(gen);#開始時間　ジャンル内の作品数を記録
 
         for kai in kaiwa_setA:
-            for leng in length_setA:
-                print(gen+" "+kai+" "+leng)#進行状況の表示
-                
-                for sts in st_set:
-                    payload = {'out': 'json','gzip':5,'opt':'weekly','lim':500,'genre':gen,'kaiwaritu':kai,'length':leng,'st':sts}
-                    res = requests.get('https://api.syosetu.com/novelapi/api/', params=payload).content
-                    r =  gzip.decompress(res).decode("utf-8")
-                    dump_to_list(r);                    
-                    tm.sleep(interval);
+            for leng in length_setA:                
+                for sho in shousetu_type_set:
+                    print(gen+" "+kai+" "+leng+" "+sho)#進行状況の表示
+                    
+                    for sts in st_set:
+                        payload = {'out': 'json','gzip':5,'opt':'weekly','lim':500,'genre':gen,'kaiwaritu':kai,'length':leng,'st':sts,'type':sho}
+                        res = requests.get('https://api.syosetu.com/novelapi/api/', params=payload).content
+                        r =  gzip.decompress(res).decode("utf-8")
+                        dump_to_list(r);                    
+                        tm.sleep(interval);
                     
                     
 #マイナージャンルの作品情報を取得する関数    
@@ -138,6 +139,7 @@ def minor_genre():
         for leng in length_setB:
             for sho in shousetu_type_set:
                 print(gen+" "+leng+" "+sho)#進行状況の表示
+                
                 for sts in st_set:
                     payload = {'out': 'json','gzip':5,'opt':'weekly','lim':500,'genre':gen,'length':leng,'type':sho,'st':sts}
                     res = requests.get('https://api.syosetu.com/novelapi/api/', params=payload).content
@@ -153,16 +155,16 @@ def non_genre():
 
         for kai in kaiwa_setC:
             for leng in length_setC:
-                print(gen+" "+kai+" "+leng)#進行状況の表示
-                
                 for sho in shousetu_type_set:
+                    print(gen+" "+kai+" "+leng+" "+sho)#進行状況の表示
+                    
                     for sts in st_set:
                         payload = {'out': 'json','gzip':5,'opt':'weekly','lim':500,'genre':gen,'kaiwaritu':kai,'length':leng,'type':sho,'st':sts}
                         res = requests.get('https://api.syosetu.com/novelapi/api/', params=payload).content
                         r =  gzip.decompress(res).decode("utf-8")
                         dump_to_list(r);
                         tm.sleep(interval);
-                        #print(r +" "+gen+" "+kai+" "+leng+" "+sho)
+                        
 
                         
 #######実行する関数をここで指定する##########
@@ -175,7 +177,7 @@ minor_genre();
 non_genre();
 
 ############最終書き込み処理#################
-record_time('export processing now');#処理終了時刻
+record_time('export processing now');#最終処理開始時刻
 exportlist=[]
 exportlist.append(title_list)
 exportlist.append(ncode_list)
