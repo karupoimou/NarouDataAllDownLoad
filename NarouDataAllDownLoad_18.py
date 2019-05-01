@@ -103,7 +103,7 @@ def main_process():
                 for leng in length_set:
                     for st in st_set:
                         payload = {'out':'json','gzip':5,'opt':'weekly','lim':500,'st':st,'nocgenre':nocgenre,'length':leng,'type':shosetu_type,'kaiwaritu':kaiwa} 
-                        res = requests.get('https://api.syosetu.com/novelapi/api/', params=payload).content
+                        res = requests.get('https://api.syosetu.com/novel18api/api/', params=payload).content
                         r =  gzip.decompress(res).decode("utf-8")
                         dump_to_list(r);
                         global now_process_count
