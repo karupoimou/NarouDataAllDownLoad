@@ -1,4 +1,4 @@
-#『なろう１８禁API』を用いて、なろう１８禁の『全作品情報データを一括取得する』Pythonスクリプト
+#『なろう１８禁API』を用いて、なろう１８禁の『特定ワードにヒットするものを抽出する』Pythonスクリプト
 import requests
 import pandas as pd
 import json
@@ -8,6 +8,15 @@ import gzip
 
 #ここで検索ワードを指定
 word_set='書籍化'
+
+#ここで検索除外ワードを指定
+notword_set=''
+
+#検索対象
+title_set=1     #タイトル検索対象にする
+ex_set=1        #あらすじを検索対象にする
+keyword_set=1   #タグ検索対象にする
+wname_set=1     #著者名を検索対象にする
 
 #出力ファイル名を指定
 filename ='Narou_18_word_0506.xlsx'
@@ -76,11 +85,17 @@ def dump_to_list(r):
 #作品情報を取得する関数
 def main_process():
     for nocgenre in nocgenre_set:
-        payload = {'out':'json','gzip':5,'opt':'weekly','lim':500,'nocgenre':nocgenre,'word':word_set} 
+        payload = {'out':'json','gzip':5,'opt':'weekly','lim':500,'nocgenre':nocgenre,'word':word_set,'notword':notword_set,'title':title_set,'ex':ex_set,'keyword':keyword_set,'wname':wname_set} 
         res = requests.get('https://api.syosetu.com/novel18api/api/', params=payload).content
         r =  gzip.decompress(res).decode("utf-8")
         dump_to_list(r);
         tm.sleep(interval);
+        
+        title_set=1
+ex_set=1
+keyword_set=1
+wname_set=1
+
                         
 #######実行する関数をここで指定する##########
 main_process();
