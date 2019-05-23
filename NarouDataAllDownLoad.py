@@ -5,6 +5,7 @@ import json
 import time as tm
 import datetime
 import gzip
+from http.client import RemoteDisconnected
 
 #出力ファイル名
 filename ='Narou_All_OUTPUT.xlsx'
@@ -133,7 +134,12 @@ def genre_A():
                     
                     for sts in st_set:
                         payload = {'out': 'json','gzip':5,'opt':'weekly','lim':500,'genre':gen,'kaiwaritu':kai,'length':leng,'st':sts,'type':sho}
-                        res = requests.get('https://api.syosetu.com/novelapi/api/', params=payload).content
+                        try:
+                            res = requests.get('https://api.syosetu.com/novelapi/api/', params=payload).content
+                        except RemoteDisconnected:
+                            tm.sleep(120)
+                            res = requests.get('https://api.syosetu.com/novelapi/api/', params=payload).content
+                            
                         r =  gzip.decompress(res).decode("utf-8")
                         dump_to_list(r);                    
                         tm.sleep(interval);
@@ -150,7 +156,12 @@ def genre_B():
 
                     for sts in st_set:
                         payload = {'out': 'json','gzip':5,'opt':'weekly','lim':500,'genre':gen,'kaiwaritu':kai,'length':leng,'type':sho,'st':sts}
-                        res = requests.get('https://api.syosetu.com/novelapi/api/', params=payload).content
+                        try:
+                            res = requests.get('https://api.syosetu.com/novelapi/api/', params=payload).content
+                        except RemoteDisconnected:
+                            tm.sleep(120)
+                            res = requests.get('https://api.syosetu.com/novelapi/api/', params=payload).content
+                            
                         r =  gzip.decompress(res).decode("utf-8")
                         dump_to_list(r);
                         tm.sleep(interval);
@@ -168,7 +179,12 @@ def genre_C():
                     
                     for sts in st_set:
                         payload = {'out': 'json','gzip':5,'opt':'weekly','lim':500,'genre':gen,'kaiwaritu':kai,'length':leng,'type':sho,'st':sts}
-                        res = requests.get('https://api.syosetu.com/novelapi/api/', params=payload).content
+                        try:
+                            res = requests.get('https://api.syosetu.com/novelapi/api/', params=payload).content
+                        except RemoteDisconnected:
+                            tm.sleep(120)
+                            res = requests.get('https://api.syosetu.com/novelapi/api/', params=payload).content
+                            
                         r =  gzip.decompress(res).decode("utf-8")
                         dump_to_list(r);
                         tm.sleep(interval);
@@ -195,7 +211,12 @@ def genre_D():
                         
                         for sts in st_set:
                             payload = {'out': 'json','gzip':5,'opt':'weekly','lim':500,'genre':gen,'kaiwaritu':kai,'length':leng,'st':sts,'type':sho}
-                            res = requests.get('https://api.syosetu.com/novelapi/api/', params=payload).content
+                            try:
+                                res = requests.get('https://api.syosetu.com/novelapi/api/', params=payload).content
+                            except RemoteDisconnected:
+                                tm.sleep(120)
+                                res = requests.get('https://api.syosetu.com/novelapi/api/', params=payload).content
+                                
                             r =  gzip.decompress(res).decode("utf-8")
                             dump_to_list(r);                    
                             tm.sleep(interval);
