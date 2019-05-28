@@ -1,16 +1,17 @@
-#『なろう１８禁API』を用いて、なろう１８禁の『全作品情報データを一括取得する』Pythonスクリプト
+#『なろう18禁API』を用いて、なろう１８禁の『全作品情報データを一括取得する』Pythonスクリプト 更新2019-05-28
 import requests
 import pandas as pd
 import json
 import time as tm
 import datetime
 import gzip
+from tqdm import tqdm
 
 #出力ファイル名
-filename ='Narou_18_ALL_OUTPUT.xlsx'
+filename ='Narou_18_ALL_OUTPUT_0529.xlsx'
 
 #リクエストの秒数間隔
-interval=1
+interval=0.1
 
 #各情報を一時的に保存していくための配列
 title_list=[];ncode_list=[];writer_list=[];story_list=[];nocgenre_list=[];gensaku_list=[];keyword_list=[];
@@ -29,16 +30,14 @@ kaiwa_set = ['-10','11-30','31-50','51-70','71-100']
 length_set = ['-1000','1001-2000','2001-3000','3001-5000','5001-10000','10001-30000','30001-50000','50001-100000','100001-']
 st_set = [1,501,1001,1501]
 
-#処理経過数の確認用
-all_process_count=0;
-now_process_count=0;
+#経過確認用
+all_process_num=0
+now_process_num=0
 
 #時刻の書き込みに使う関数
 def record_time(s):
     now = datetime.datetime.now()
-    dt_now = datetime.datetime.now()
-    nowtime = dt_now.strftime('%Y-%m-%d %H:%M:%S')
-    print(s+" "+nowtime)
+    print(s+" "+str(now))
 
 #書き込み処理の関数
 def dump_to_list(r):
@@ -85,35 +84,59 @@ def start_process():
     all_num = requests.get('https://api.syosetu.com/novel18api/api/', params=payload).text
     print(all_num);
     
-#処理の合計数を計算
-def all_count():
+# STの計算に使う
+def check_st(payload):
+    
+    allcount=[] 
+    res = requests.get('https://api.syosetu.com/novel18api/api/', params=payload).content
+    r =  gzip.decompress(res).decode("utf-8")
+    
+    for data in json.loads(r):
+        try:            
+            allcount.append(data['allcount'])
+        except KeyError:
+            pass
+        
+    if allcount[0]<500:
+        return 1;
+    elif 500<=allcount[0]<1000:
+        return 2;
+    else:
+        print(allcount[0])
+        return 4;
+
+#処理件数の表示
+def calc_process():
     for nocgenre in nocgenre_set:
         for shosetu_type in type_set:
-            for kaiwa in kaiwa_set:
-                for leng in length_set:
-                    for st in st_set:
-                        global all_process_count
-                        all_process_count=all_process_count+1
-                        
+            for kaiwaritu in kaiwa_set:
+                for length in length_set:
+                    global all_process_num
+                    all_process_num=all_process_num+1
+                    
 #作品情報を取得する関数
 def main_process():
     for nocgenre in nocgenre_set:
         for shosetu_type in type_set:
-            for kaiwa in kaiwa_set:
-                for leng in length_set:
-                    for st in st_set:
-                        payload = {'out':'json','gzip':5,'opt':'weekly','lim':500,'st':st,'nocgenre':nocgenre,'length':leng,'type':shosetu_type,'kaiwaritu':kaiwa} 
+            for kaiwaritu in kaiwa_set:
+                for length in length_set:
+                    global now_process_num
+                    global all_process_num
+                    payload ={'out':'json','gzip':5,'lim':1,'nocgenre':nocgenre,'length':length,'type':shosetu_type,'kaiwaritu':kaiwaritu}
+                    st_num=check_st(payload)
+                    now_process_num=now_process_num+1
+                    print(str(now_process_num),"/",str(all_process_num))
+                    
+                    for st in range(st_num):
+                        payload = {'out':'json','gzip':5,'opt':'weekly','lim':500,'st':st_set[st],'nocgenre':nocgenre,'length':length,'type':shosetu_type,'kaiwaritu':kaiwaritu} 
                         res = requests.get('https://api.syosetu.com/novel18api/api/', params=payload).content
                         r =  gzip.decompress(res).decode("utf-8")
                         dump_to_list(r);
-                        global now_process_count
-                        now_process_count=now_process_count+1  
-                        print('step:',now_process_count,'/',all_process_count)
                         tm.sleep(interval);
                         
 #######実行する関数をここで指定する##########
 start_process();
-all_count();
+calc_process();
 main_process();
 
 ############最終書き込み処理#################
@@ -155,7 +178,7 @@ df = pd.DataFrame(exportlist, index=column_name)#pandasのデータフレーム�
 
 # xlsx ファイル出力
 writer = pd.ExcelWriter(filename,options={'strings_to_urls': False})
-df.T.to_excel(writer, sheet_name="sheet1")#Writerを通して書き込み
+df.T.to_excel(writer, sheet_name="Sheet1")#Writerを通して書き込み
 writer.close()
 
 record_time('Completed');#処理終了時刻
