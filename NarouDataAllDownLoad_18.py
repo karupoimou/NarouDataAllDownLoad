@@ -11,7 +11,7 @@ from tqdm import tqdm
 filename ='Narou_18_ALL_OUTPUT_0529.xlsx'
 
 #リクエストの秒数間隔
-interval=0.1
+interval=1
 
 #各情報を一時的に保存していくための配列
 title_list=[];ncode_list=[];writer_list=[];story_list=[];nocgenre_list=[];gensaku_list=[];keyword_list=[];
