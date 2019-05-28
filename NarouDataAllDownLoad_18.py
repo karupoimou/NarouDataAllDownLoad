@@ -5,7 +5,6 @@ import json
 import time as tm
 import datetime
 import gzip
-from tqdm import tqdm
 
 #出力ファイル名
 filename ='Narou_18_ALL_OUTPUT_0529.xlsx'
