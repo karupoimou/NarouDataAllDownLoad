@@ -1,4 +1,6 @@
 #『なろう小説API』を用いて、なろうの『全作品情報データを一括取得する』Pythonスクリプト
+#2019-08-01更新
+import sys
 import requests
 import pandas as pd
 import json
@@ -8,20 +10,79 @@ import gzip
 from http.client import RemoteDisconnected
 
 #出力ファイル名
-filename ='Narou_All_OUTPUT.xlsx'
+filename ='Narou_All_OUTPUT_0801.xlsx'
 
-#リクエストの秒数間隔
+#リクエストの秒数間隔(1以上を推奨)
 interval=1
 
 #各情報を一時的に保存していくための配列
-title_list=[];ncode_list=[];userid_list=[];writer_list=[];story_list=[];biggenre_list=[];genre_list=[];gensaku_list=[];
-keyword_list=[];general_firstup_list=[];general_lastup_list=[];novel_type_list=[];end_list=[];general_all_no_list=[];
-length_list=[];time_list=[];isstop_list=[];isr15_list=[];isbl_list=[];isgl_list=[];iszankoku_list=[];istensei_list=[];
-istenni_list=[];pc_or_k_list=[];global_point_list=[];fav_novel_cnt_list=[];review_cnt_list=[];all_point_list=[];
-all_hyoka_cnt_list=[];sasie_cnt_list=[];kaiwaritu_list=[];novelupdated_at_list=[];updated_at_list=[];weekly_unique_list=[];
+title_list=[]
+ncode_list=[]
+userid_list=[]
+writer_list=[]
+story_list=[]
+biggenre_list=[]
+genre_list=[]
+gensaku_list=[]
+keyword_list=[]
+general_firstup_list=[]
+general_lastup_list=[]
+novel_type_list=[]
+end_list=[]
+general_all_no_list=[]
+length_list=[]
+time_list=[]
+isstop_list=[]
+isr15_list=[]
+isbl_list=[]
+isgl_list=[]
+iszankoku_list=[]
+istensei_list=[]
+istenni_list=[]
+pc_or_k_list=[]
+global_point_list=[]
+fav_novel_cnt_list=[]
+review_cnt_list=[]
+all_point_list=[]
+all_hyoka_cnt_list=[]
+sasie_cnt_list=[]
+kaiwaritu_list=[]
+novelupdated_at_list=[]
+updated_at_list=[]
+weekly_unique_list=[]
 
 #出力の際の項目名を指定
-column_name = ['title','ncode','userid','writer','story','biggenre','genre','gensaku','keyword','general_firstup','general_lastup','novel_type','end','general_all_no','length','time','isstop','isr15','isbl','isgl','iszankoku','istensei','istenni','pc_or_k','global_point','fav_novel_cnt','review_cnt','all_point','all_hyoka_cnt','sasie_cnt','kaiwaritu','novelupdated_at','updated_at','weekly_unique']
+column_name = ['title',
+               'ncode',
+               'userid',
+               'writer',
+               'story',
+               'biggenre',
+               'genre',
+               'gensaku',
+               'keyword',
+               'general_firstup',
+               'general_lastup',
+               'novel_type',
+               'end','general_all_no',
+               'length','time','isstop',
+               'isr15',
+               'isbl',
+               'isgl',
+               'iszankoku',
+               'istensei',
+               'istenni',
+               'pc_or_k',
+               'global_point',
+               'fav_novel_cnt',
+               'review_cnt',
+               'all_point',
+               'all_hyoka_cnt',
+               'sasie_cnt',
+               'kaiwaritu',
+               'novelupdated_at',
+               'updated_at',
+               'weekly_unique']
 
 #リスト途中経過を見るための変数
 processed_num=0;
@@ -95,10 +156,9 @@ def dump_to_list(r):
         except KeyError:
             pass
         
-#最初に処理される関数
+#最初に処理される関数 全体の数をメモ
 def start_process():  
     record_time('Start');#処理開始時刻
-    #全体の数をメモ
     payload = {'out': 'json','of':'n','lim':1}
     allnum = requests.get('https://api.syosetu.com/novelapi/api/', params=payload).text
     print('対象数作品  ',allnum);
@@ -122,6 +182,53 @@ def genre_count(g):
     
     print('\n対象数作品  ',g_num);#次ジャンルの作品総数を表示
 
+    
+#　APIにリクエストを行い、データを受け取る。RemoteDisconnectedの場合は60秒を置いて10回までトライする
+def requests_to_api(payload):
+    
+    i = 0  
+    
+    while i < 10:
+        try:
+            res = requests.get('https://api.syosetu.com/novelapi/api/', params=payload).content
+            break
+
+        except RemoteDisconnected:
+            print("RemoteDisconnected Error! Waiting for reload")
+            tm.sleep(60)
+            i=i+1
+            if i == 10:
+                print("RemoteDisconnected Error. Incomplete.　Sys exit")
+                sys.exit()
+            else:
+                pass
+            
+    r =  gzip.decompress(res).decode("utf-8")
+    dump_to_list(r);                    
+    tm.sleep(interval);
+
+# STの計算に使う
+def check_st(payload):
+    
+    allcount=[] 
+    res = requests.get('https://api.syosetu.com/novelapi/api/', params=payload).content
+    r =  gzip.decompress(res).decode("utf-8")
+    
+    for data in json.loads(r):
+        try:            
+            allcount.append(data['allcount'])
+        except KeyError:
+            pass
+        
+    print(allcount[0])
+
+    if allcount[0]<500:
+        return 1;
+    elif 500<=allcount[0]<1000:
+        return 2;
+    else:
+        return 4;
+    
 #多いジャンルの作品情報を取得する関数    
 def genre_A():
     for gen in genre_setA:
@@ -129,21 +236,16 @@ def genre_A():
 
         for kai in kaiwa_setA:                
             for leng in length_setA:
-                print(gen+" "+kai+" "+leng)#進行状況の表示
                 for sho in shousetu_type_set:
                     
-                    for sts in st_set:
-                        payload = {'out': 'json','gzip':5,'opt':'weekly','lim':500,'genre':gen,'kaiwaritu':kai,'length':leng,'st':sts,'type':sho}
-                        try:
-                            res = requests.get('https://api.syosetu.com/novelapi/api/', params=payload).content
-                        except RemoteDisconnected:
-                            tm.sleep(120)
-                            res = requests.get('https://api.syosetu.com/novelapi/api/', params=payload).content
-                            
-                        r =  gzip.decompress(res).decode("utf-8")
-                        dump_to_list(r);                    
-                        tm.sleep(interval);
+                    print(gen+" "+kai+" "+leng+" "+sho)#進行状況の表示
+                    payload = {'out': 'json','gzip':5,'lim':1,'genre':gen,'kaiwaritu':kai,'length':leng,'type':sho}
+                    st_num=check_st(payload)
                     
+                    for s in range(st_num):                        
+                        payload = {'out': 'json','gzip':5,'opt':'weekly','lim':500,'genre':gen,'kaiwaritu':kai,'length':leng,'st':st_set[s],'type':sho}
+                        requests_to_api(payload);
+                        
 #少ないジャンルの作品情報を取得する関数    
 def genre_B():
     for gen in genre_setB:
@@ -151,20 +253,15 @@ def genre_B():
        
         for kai in kaiwa_setB:
             for leng in length_setB:
-                print(gen+" "+kai+" "+leng)#進行状況の表示
                 for sho in shousetu_type_set:
 
-                    for sts in st_set:
-                        payload = {'out': 'json','gzip':5,'opt':'weekly','lim':500,'genre':gen,'kaiwaritu':kai,'length':leng,'type':sho,'st':sts}
-                        try:
-                            res = requests.get('https://api.syosetu.com/novelapi/api/', params=payload).content
-                        except RemoteDisconnected:
-                            tm.sleep(120)
-                            res = requests.get('https://api.syosetu.com/novelapi/api/', params=payload).content
-                            
-                        r =  gzip.decompress(res).decode("utf-8")
-                        dump_to_list(r);
-                        tm.sleep(interval);
+                    print(gen+" "+kai+" "+leng+" "+sho)#進行状況の表示
+                    payload = {'out': 'json','gzip':5,'lim':1,'genre':gen,'kaiwaritu':kai,'length':leng,'type':sho}
+                    st_num=check_st(payload)
+                    
+                    for s in range(st_num): 
+                        payload = {'out': 'json','gzip':5,'opt':'weekly','lim':500,'genre':gen,'kaiwaritu':kai,'length':leng,'type':sho,'st':st_set[s]}
+                        requests_to_api(payload);
                    
                     
 #『ノンジャンル：9801』の作品情報を取得する関数 
@@ -174,20 +271,15 @@ def genre_C():
 
         for kai in kaiwa_setC:
             for leng in length_setC:
-                print(gen+" "+kai+" "+leng)#進行状況の表示
                 for sho in shousetu_type_set:
                     
-                    for sts in st_set:
-                        payload = {'out': 'json','gzip':5,'opt':'weekly','lim':500,'genre':gen,'kaiwaritu':kai,'length':leng,'type':sho,'st':sts}
-                        try:
-                            res = requests.get('https://api.syosetu.com/novelapi/api/', params=payload).content
-                        except RemoteDisconnected:
-                            tm.sleep(120)
-                            res = requests.get('https://api.syosetu.com/novelapi/api/', params=payload).content
-                            
-                        r =  gzip.decompress(res).decode("utf-8")
-                        dump_to_list(r);
-                        tm.sleep(interval);
+                    print(gen+" "+kai+" "+leng+" "+sho)#進行状況の表示
+                    payload = {'out': 'json','gzip':5,'lim':1,'genre':gen,'kaiwaritu':kai,'length':leng,'type':sho}
+                    st_num=check_st(payload)
+                    
+                    for s in range(st_num):
+                        payload = {'out': 'json','gzip':5,'opt':'weekly','lim':500,'genre':gen,'kaiwaritu':kai,'length':leng,'type':sho,'st':st_set[s]}
+                        requests_to_api(payload);
                         
 #99XXジャンルを取得する関数
 def genre_D():
@@ -206,76 +298,79 @@ def genre_D():
         else:
             for kai in kaiwa_setD:                
                 for leng in length_setD:
-                    print(gen+" "+kai+" "+leng)#進行状況の表示
+
                     for sho in shousetu_type_set:
+                        print(gen+" "+kai+" "+leng+" "+sho)#進行状況の表示
+                        payload =  {'out': 'json','gzip':5,'lim':1,'genre':gen,'kaiwaritu':kai,'length':leng,'type':sho}
+                        st_num=check_st(payload)
                         
-                        for sts in st_set:
-                            payload = {'out': 'json','gzip':5,'opt':'weekly','lim':500,'genre':gen,'kaiwaritu':kai,'length':leng,'st':sts,'type':sho}
-                            try:
-                                res = requests.get('https://api.syosetu.com/novelapi/api/', params=payload).content
-                            except RemoteDisconnected:
-                                tm.sleep(120)
-                                res = requests.get('https://api.syosetu.com/novelapi/api/', params=payload).content
-                                
-                            r =  gzip.decompress(res).decode("utf-8")
-                            dump_to_list(r);                    
-                            tm.sleep(interval);
-                        
+                        for s in range(st_num):
+                            payload = {'out': 'json','gzip':5,'opt':'weekly','lim':500,'genre':gen,'kaiwaritu':kai,'length':leng,'st':st_set[s],'type':sho}
+                            requests_to_api(payload);
+
+
+#書き込み処理
+def dump_to_excel():
+    record_time('start export processing');#最終処理開始時刻
+    exportlist=[]
+    exportlist.append(title_list)
+    exportlist.append(ncode_list)
+    exportlist.append(userid_list)
+    exportlist.append(writer_list)
+    exportlist.append(story_list)
+    exportlist.append(biggenre_list)
+    exportlist.append(genre_list)
+    exportlist.append(gensaku_list)
+    exportlist.append(keyword_list)
+    exportlist.append(general_firstup_list)
+    exportlist.append(general_lastup_list)
+    exportlist.append(novel_type_list)
+    exportlist.append(end_list)
+    exportlist.append(general_all_no_list)
+    exportlist.append(length_list)
+    exportlist.append(time_list)
+    exportlist.append(isstop_list)
+    exportlist.append(isr15_list)
+    exportlist.append(isbl_list)
+    exportlist.append(isgl_list)
+    exportlist.append(iszankoku_list)
+    exportlist.append(istensei_list)
+    exportlist.append(istenni_list)
+    exportlist.append(pc_or_k_list)
+    exportlist.append(global_point_list)
+    exportlist.append(fav_novel_cnt_list)
+    exportlist.append(review_cnt_list)
+    exportlist.append(all_point_list)
+    exportlist.append(all_hyoka_cnt_list)
+    exportlist.append(sasie_cnt_list)
+    exportlist.append(kaiwaritu_list)
+    exportlist.append(novelupdated_at_list)
+    exportlist.append(updated_at_list)
+    exportlist.append(weekly_unique_list)
+
+    #pandasのデータフレームに収納 
+    df = pd.DataFrame(exportlist, index=column_name)
+
+    # .xlsx ファイル出力
+    writer = pd.ExcelWriter(filename,options={'strings_to_urls': False})
+    df.T.to_excel(writer, sheet_name="sheet1")#Writerを通して書き込み
+    writer.close()
+
 #######実行する関数をここで指定する##########
 
 #必要がないものはコメントアウトしてください
 #また分割して取得する際にご利用ください
-start_process();
+t1 = tm.time()
 
+start_process();
 genre_A();
 genre_B();
 genre_C();
 genre_D();
 
-############最終書き込み処理#################
-record_time('start export processing');#最終処理開始時刻
-exportlist=[]
-exportlist.append(title_list)
-exportlist.append(ncode_list)
-exportlist.append(userid_list)
-exportlist.append(writer_list)
-exportlist.append(story_list)
-exportlist.append(biggenre_list)
-exportlist.append(genre_list)
-exportlist.append(gensaku_list)
-exportlist.append(keyword_list)
-exportlist.append(general_firstup_list)
-exportlist.append(general_lastup_list)
-exportlist.append(novel_type_list)
-exportlist.append(end_list)
-exportlist.append(general_all_no_list)
-exportlist.append(length_list)
-exportlist.append(time_list)
-exportlist.append(isstop_list)
-exportlist.append(isr15_list)
-exportlist.append(isbl_list)
-exportlist.append(isgl_list)
-exportlist.append(iszankoku_list)
-exportlist.append(istensei_list)
-exportlist.append(istenni_list)
-exportlist.append(pc_or_k_list)
-exportlist.append(global_point_list)
-exportlist.append(fav_novel_cnt_list)
-exportlist.append(review_cnt_list)
-exportlist.append(all_point_list)
-exportlist.append(all_hyoka_cnt_list)
-exportlist.append(sasie_cnt_list)
-exportlist.append(kaiwaritu_list)
-exportlist.append(novelupdated_at_list)
-exportlist.append(updated_at_list)
-exportlist.append(weekly_unique_list)
+dump_to_excel()
 
-#pandasのデータフレームに収納 
-df = pd.DataFrame(exportlist, index=column_name)#pandasのデータフレームに収納 
-
-# xlsx ファイル出力
-writer = pd.ExcelWriter(filename,options={'strings_to_urls': False})
-df.T.to_excel(writer, sheet_name="sheet1")#Writerを通して書き込み
-writer.close()
+t2 = tm.time()
 
 record_time('Completed');#処理終了時刻
+print("処理に掛かった時間："+str(t2-t1)+"秒")
