@@ -235,7 +235,13 @@ def dump_data():
     exportlist.append(istenni_list)
     exportlist.append(pc_or_k_list)
     exportlist.append(global_point_list)
-    exportlist.append(fav_novel_cnt_list)
+    exportlist.append(daily_point_list)#追加
+    exportlist.append(weekly_point_list)#追加
+    exportlist.append(monthly_point_list)#追加
+    exportlist.append(quarter_point_list)#追加
+    exportlist.append(yearly_point_list)#追加
+    exportlist.append(fav_novel_cnt_list)    
+    exportlist.append(impression_cnt)#追加   
     exportlist.append(review_cnt_list)
     exportlist.append(all_point_list)
     exportlist.append(all_hyoka_cnt_list)
