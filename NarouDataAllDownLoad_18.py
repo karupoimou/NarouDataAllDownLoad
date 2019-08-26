@@ -1,5 +1,5 @@
 #『なろう18禁API』を用いて、なろう１８禁の『全作品情報データを一括取得する』Pythonスクリプト
-#更新2019-08-01
+#更新2019-08-26
 import sys
 import requests
 import pandas as pd
@@ -9,7 +9,7 @@ import datetime
 import gzip
 
 #出力ファイル
-filename ='Narou_18_ALL_OUTPUT_0801_1.xlsx'
+filename ='Narou_18_ALL_OUTPUT_0826.xlsx'
 
 #リクエストの秒数間隔（１以上を推奨）
 interval=1
@@ -47,6 +47,14 @@ novelupdated_at_list=[]
 updated_at_list=[]
 weekly_unique_list=[]
 
+#追加2019_08_26
+daily_point_list=[]
+weekly_point_list=[]
+monthly_point_list=[]
+quarter_point_list=[]
+yearly_point_list=[]
+impression_cnt_list=[]
+
 #出力の際の項目名を指定
 column_name = ['title',
                'ncode',
@@ -68,8 +76,13 @@ column_name = ['title',
                'istensei',
                'istenni',
                'pc_or_k',
-               'global_point',
+               'daily_point',
+               'weekly_point',
+               'monthly_point',
+               'quarter_point',
+               'yearly_point',               
                'fav_novel_cnt',
+               'impression_cnt',
                'review_cnt',
                'all_point',
                'all_hyoka_cnt',
@@ -121,7 +134,13 @@ def dump_to_list(r):
             istenni_list.append(data['istenni'])
             pc_or_k_list.append(data['pc_or_k'])
             global_point_list.append(data['global_point'])
+            daily_point_list.append(data['daily_point'])#追加2019_08_26
+            weekly_point_list.append(data['weekly_point'])#追加2019_08_26
+            monthly_point_list.append(data['monthly_point'])#追加2019_08_26
+            quarter_point_list.append(data['quarter_point'])#追加2019_08_26
+            yearly_point_list.append(data['yearly_point'])#追加2019_08_26
             fav_novel_cnt_list.append(data['fav_novel_cnt'])
+            impression_cnt_list.append(data['impression_cnt'])#追加2019_08_26
             review_cnt_list.append(data['review_cnt'])
             all_point_list.append(data['all_point'])
             all_hyoka_cnt_list.append(data['all_hyoka_cnt'])
