@@ -6,7 +6,9 @@
 以下のパッケージを使用していますのでインストールしていない場合は導入して下さい。
 
 pip install pandas
+
 pip install tqdm
+
 pip install requests
 
 ## 説明
