@@ -89,7 +89,7 @@ def generate_lastup_list():
     unix_time = int(now.timestamp())
    
     #Unixtimeを使った期間指定で作品情報を取得する
-    for i in range(10):
+    for i in range(100000):
 
         if start_day < unix_time:
 
