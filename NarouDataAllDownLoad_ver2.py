@@ -1,16 +1,17 @@
 #『なろう小説API』を用いて、なろうの『全作品情報データを一括取得する』Pythonスクリプト
-#2019-09-20更新
+#2019-09-27更新
 import requests
 import pandas as pd
 import json
 import time as tm
 import datetime
 import gzip
-from tqdm import tqdm
 import re
+from tqdm import tqdm
+tqdm.pandas()
 
 #出力ファイル名
-filename ='Narou_All_OUTPUT_09_20.xlsx'
+filename ='Narou_All_OUTPUT_09_27.xlsx'
 
 #リクエストの秒数間隔(1以上を推奨)
 interval=1
@@ -18,6 +19,12 @@ interval=1
 #取得するGETパラメータの「lastup」リスト
 temp_lastup_list=[]   
 
+#レスポンスの一時リスト
+res_list=[]
+
+#各情報を一時的に保存していくための配列の準備
+temp_data_list=[]   
+    
 #取得パラメータを指定
 column_name_list = ['title',
                    'ncode',
@@ -82,7 +89,7 @@ def generate_lastup_list():
     unix_time = int(now.timestamp())
    
     #Unixtimeを使った期間指定で作品情報を取得する
-    for i in range(100000):
+    for i in range(10):
 
         if start_day < unix_time:
 
@@ -127,20 +134,14 @@ def generate_lastup_list():
 
 #全作品情報の取得
 def get_all_novel_info():
-    
-    #レスポンスの一時リスト
-    res_list=[]
-    
-    #リクエストエラー回数のメモ用
-    error_cnt = 0 
-    
+         
     #リストを逆順にし、過去から現在に向かって取得していく        
     temp_lastup_list.reverse()
     
     #APIへリクエスト
     for lastup in tqdm(temp_lastup_list):
         payload = {'out': 'json','gzip':5,'opt':'weekly','lim':500,'lastup':lastup} 
-        res = requests.get('https://api.syosetu.com/novelapi/api/', params=payload, timeout=10).content
+        res = requests.get('https://api.syosetu.com/novelapi/api/', params=payload, timeout=30).content
         r =  gzip.decompress(res).decode("utf-8")
         
         #レスポンスを一旦リストに収納する
@@ -148,23 +149,19 @@ def get_all_novel_info():
         
         #取得間隔を空ける
         tm.sleep(interval)
- 
-    #リクエストの展開
-    dump_to_list(res_list)
-        
+             
 #書き込み処理の関数
-def dump_to_list(res_list):
+def dump_to_list():
     
-    #各情報を一時的に保存していくための配列の準備
-    temp_data_list=[]
-    
+    global temp_data_list
+        
     for i in range(len(column_name_list)):
         temp_data_list.append([])
     
     #レスポンスリストを展開
     for r in res_list:
     
-        #リストに入れる
+        # temp_data_listに入れる
         for data in json.loads(r):
             try:
                 for i in range(len(column_name_list)):               
@@ -178,41 +175,42 @@ def dump_to_list(res_list):
                  if 500 <= data["allcount"]:
                     print("取得できなかった作品が存在します。generate_lastup_listの取得間隔を変更してください")
             except KeyError:
-                pass      
-            
-    #エクセルファイルに書き込む処理へ        
-    dump_to_excel(temp_data_list)
-        
+                pass
+                               
 #エクセルファイルに書き込む処理
-def dump_to_excel(temp_data_list):
-    
+def dump_to_excel():
+       
     exportlist=[]
     
     #各項目のリストを1つにまとめる
     for i in range(len(column_name_list)):
         exportlist.append(temp_data_list[i])
-
+    
     #pandasのデータフレームに収納 
     df = pd.DataFrame(exportlist, index=column_name_list)   
     df= df.T
 
     #IllegalCharacterErrorの予防
-    df = df.applymap(illegal_char_remover)
+#     df = df.progress_applymap(illegal_char_remover)
 
+    # .xlsx ファイル出力
+#     df.to_excel(filename, sheet_name="Sheet1")#Writerを通して書き込み
+    
+    print("export process")
     # .xlsx ファイル出力
     writer = pd.ExcelWriter(filename,options={'strings_to_urls': False})
     df.to_excel(writer, sheet_name="Sheet1")#Writerを通して書き込み
     writer.close() 
 
 # IllegalCharacterErrorの予防、無効文字の除去
-def illegal_char_remover(data):
-    ILLEGAL_CHARACTERS_RE = re.compile(
-        r'[\000-\010]|[\013-\014]|[\016-\037]|[\x00-\x1f\x7f-\x9f]|[\uffff]')
-    """Remove ILLEGAL CHARACTER."""
-    if isinstance(data, str):
-        return ILLEGAL_CHARACTERS_RE.sub("", data)
-    else:
-        return data
+# def illegal_char_remover(data):
+#     ILLEGAL_CHARACTERS_RE = re.compile(
+#         r'[\000-\010]|[\013-\014]|[\016-\037]|[\x00-\x1f\x7f-\x9f]|[\uffff]')
+#     """Remove ILLEGAL CHARACTER."""
+#     if isinstance(data, str):
+#         return ILLEGAL_CHARACTERS_RE.sub("", data)
+#     else:
+#         return data
 
 #######　関数の実行を指定　##########
 print("start",datetime.datetime.now())
@@ -221,5 +219,7 @@ start_process()
 
 generate_lastup_list()
 get_all_novel_info()
+dump_to_list()
+dump_to_excel()
 
 print("end",datetime.datetime.now())
