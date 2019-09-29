@@ -9,9 +9,9 @@ import gzip
 import re
 from tqdm import tqdm
 tqdm.pandas()
-
+import xlsxwriter
 #出力ファイル名
-filename ='Narou_All_OUTPUT_09_27.xlsx'
+filename ='Narou_All_OUTPUT_09_30.xlsx'
 
 #リクエストの秒数間隔(1以上を推奨)
 interval=1
@@ -179,7 +179,9 @@ def dump_to_list():
                                
 #エクセルファイルに書き込む処理
 def dump_to_excel():
-       
+    
+    print("export process")
+        
     exportlist=[]
     
     #各項目のリストを1つにまとめる
@@ -190,27 +192,12 @@ def dump_to_excel():
     df = pd.DataFrame(exportlist, index=column_name_list)   
     df= df.T
 
-    #IllegalCharacterErrorの予防
-#     df = df.progress_applymap(illegal_char_remover)
+
 
     # .xlsx ファイル出力
-#     df.to_excel(filename, sheet_name="Sheet1")#Writerを通して書き込み
-    
-    print("export process")
-    # .xlsx ファイル出力
-    writer = pd.ExcelWriter(filename,options={'strings_to_urls': False})
+    writer = pd.ExcelWriter(filename,options={'strings_to_urls': False}, engine='xlsxwriter')
     df.to_excel(writer, sheet_name="Sheet1")#Writerを通して書き込み
     writer.close() 
-
-# IllegalCharacterErrorの予防、無効文字の除去
-# def illegal_char_remover(data):
-#     ILLEGAL_CHARACTERS_RE = re.compile(
-#         r'[\000-\010]|[\013-\014]|[\016-\037]|[\x00-\x1f\x7f-\x9f]|[\uffff]')
-#     """Remove ILLEGAL CHARACTER."""
-#     if isinstance(data, str):
-#         return ILLEGAL_CHARACTERS_RE.sub("", data)
-#     else:
-#         return data
 
 #######　関数の実行を指定　##########
 print("start",datetime.datetime.now())
