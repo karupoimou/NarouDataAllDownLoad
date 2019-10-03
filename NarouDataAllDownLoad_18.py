@@ -94,7 +94,7 @@ def generate_lastup_list():
 
             #だいぶ以前の投稿（エポック秒で直接指定していしてます）
             elif 1545000000 <  unix_time <= now_time-500000:
-                next_time=int(unix_time-500000)
+                next_time=int(unix_time-300000)
 
             elif 1400000000 < unix_time <= 1545000000:
                 next_time=int(unix_time-1000000)
