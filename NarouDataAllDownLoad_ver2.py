@@ -102,7 +102,7 @@ def generate_lastup_list():
                 next_time=int(unix_time-8000)
 
             # 約十日以内の投稿
-            elif now_time-1000000 <  unix_time <= now_time-250000:
+            elif now_time-1000000 <  unix_time <= now_time-330000:
                 next_time=int(unix_time-12000)
 
             #約百日以内の投稿
