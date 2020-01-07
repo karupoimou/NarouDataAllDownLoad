@@ -1,5 +1,5 @@
 #『なろう小説API』を用いて、なろうの『全作品情報データを一括取得する』Pythonスクリプト
-#2019-09-27更新
+#2020-01-07更新
 import requests
 import pandas as pd
 import json
@@ -11,7 +11,7 @@ from tqdm import tqdm
 tqdm.pandas()
 import xlsxwriter
 #出力ファイル名
-filename ='Narou_All_OUTPUT_09_30.xlsx'
+filename ='Narou_All_OUTPUT_2020_01_07.xlsx'
 
 #リクエストの秒数間隔(1以上を推奨)
 interval=1
@@ -89,28 +89,27 @@ def generate_lastup_list():
     unix_time = int(now.timestamp())
    
     #Unixtimeを使った期間指定で作品情報を取得する
-    for i in range(100000):
+    for i in range(10000):
 
         if start_day < unix_time:
 
             # 1日以内の投稿
             if now_time-86400 <  unix_time:
-                next_time=int(unix_time-3000)
+                next_time=int(unix_time-2000)
 
             # 約4日以内の投稿
             elif now_time-330000 <  unix_time <= now_time-86400:
-                next_time=int(unix_time-8000)
+                next_time=int(unix_time-5000)
 
             # 約十日以内の投稿
             elif now_time-1000000 <  unix_time <= now_time-330000:
-                next_time=int(unix_time-12000)
-
-            #約百日以内の投稿
-            elif now_time-10000000 <  unix_time <= now_time-1000000:
-                next_time=int(unix_time-25000)
+                next_time=int(unix_time-8000)
 
             #だいぶ以前の投稿（エポック秒で直接指定していしてます）
-            elif 1545000000 <  unix_time <= now_time-10000000:
+            elif 1577800000 <  unix_time <= now_time-1000000:
+                next_time=int(unix_time-15000)
+
+            elif 1545000000 <  unix_time <= 1577800000:
                 next_time=int(unix_time-40000)
 
             elif 1500000000 <  unix_time <= 1545000000:
@@ -140,8 +139,15 @@ def get_all_novel_info():
     
     #APIへリクエスト
     for lastup in tqdm(temp_lastup_list):
-        payload = {'out': 'json','gzip':5,'opt':'weekly','lim':500,'lastup':lastup} 
-        res = requests.get('https://api.syosetu.com/novelapi/api/', params=payload, timeout=30).content
+        
+        payload = {'out': 'json','gzip':5,'opt':'weekly','lim':500,'lastup':lastup}
+        
+        try:
+            res = requests.get('https://api.syosetu.com/novelapi/api/', params=payload, timeout=30).content
+        except:
+            tm.sleep(100) #接続エラーの場合、100秒後に再リクエストする
+            res = requests.get('https://api.syosetu.com/novelapi/api/', params=payload, timeout=30).content
+            
         r =  gzip.decompress(res).decode("utf-8")
         
         #レスポンスを一旦リストに収納する
@@ -191,8 +197,6 @@ def dump_to_excel():
     #pandasのデータフレームに収納 
     df = pd.DataFrame(exportlist, index=column_name_list)   
     df= df.T
-
-
 
     # .xlsx ファイル出力
     writer = pd.ExcelWriter(filename,options={'strings_to_urls': False}, engine='xlsxwriter')
