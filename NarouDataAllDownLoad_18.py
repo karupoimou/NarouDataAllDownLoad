@@ -20,11 +20,11 @@ now_day = datetime.datetime.now()
 now_day = now_day.strftime("%Y_%m_%d")
 
 if is_narou:
-    filename ='Narou_18_ALL_OUTPUT_%s.xlsx'%now_day
-    api_url="https://api.syosetu.com/novelapi/api/"
-else:
     filename = 'Narou_All_OUTPUT_%s.xlsx'%now_day
-    api_url="https://api.syosetu.com/novel18api/api/"  
+    api_url="https://api.syosetu.com/novelapi/api/"    
+else:
+    filename ='Narou_18_ALL_OUTPUT_%s.xlsx'%now_day
+    api_url="https://api.syosetu.com/novel18api/api/"
 
 #####　以上設定、以下関数　##############
     
