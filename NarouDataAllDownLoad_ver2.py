@@ -50,20 +50,15 @@ def get_all_novel_info():
         payload = {'out': 'json','gzip':5,'opt':'weekly','lim':500,'lastup':"1073779200-"+str(lastup)}
         
         # なろうAPIにリクエスト
-        try:
-            res = requests.get(api_url, params=payload, timeout=30).content
-        
-        # 通信エラー発生時の例外処理
-        except:
-            cnt=0
-            while cnt < 5:
-                try:
-                    res = requests.get(api_url, params=payload, timeout=30).content
-                    break
-                except:
-                    print("error")
-                    cnt = cnt+1
-                    tm.sleep(120) #接続エラーの場合、120秒後に再リクエストする
+        cnt = 0
+        while cnt < 5:
+            try:
+                res = requests.get(api_url, params=payload, timeout=30).content
+                break
+            except:
+                print("Connection Error")
+                cnt = cnt + 1
+                tm.sleep(120) #接続エラーの場合、120秒後に再リクエストする
             
         r =  gzip.decompress(res).decode("utf-8")   
     
