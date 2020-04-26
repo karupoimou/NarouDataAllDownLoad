@@ -8,20 +8,20 @@ pythonを使って「なろうAPI」からなろうに存在する全ての小�
 
 ## 使用準備
 以下のpipパッケージを使用していますのでインストールしていない場合は導入して下さい。
-`
+```
 pip install pandas
 pip install tqdm
 pip install requests
 pip install xlsxwriter
-`
+```
 
 ## 使用方法
 Python3.5以上のバージョンで.pyを実行してください。
 実行ファイルと同じフォルダに
-`
+```
 #出力ファイル名
 filename ='All_OUTPUT_20xx_xx_xx.xlsx'
-`
+```
 で指定したエクセルファイルが出力されます（なおファイルサイズは約200MBです）
 
 ## トラブルシューティング
