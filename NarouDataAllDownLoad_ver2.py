@@ -1,5 +1,5 @@
 #『なろう小説API』を用いて、なろうの『全作品情報データを一括取得する』Pythonスクリプト
-#2020-01-21更新
+#2020-04-26更新
 import requests
 import pandas as pd
 import json
@@ -9,9 +9,10 @@ import gzip
 from tqdm import tqdm
 tqdm.pandas()
 import xlsxwriter
+import sqlite3
 
 #リクエストの秒数間隔(1以上を推奨)
-interval = 1
+interval = 2
 
 ### なろう小説API・なろう１８禁小説API を設定 ####
 is_narou = True
@@ -21,10 +22,15 @@ now_day = now_day.strftime("%Y_%m_%d")
 
 if is_narou:
     filename = 'Narou_All_OUTPUT_%s.xlsx'%now_day
+    sql_filename = 'Narou_All_OUTPUT_%s.sqlite3'%now_day
     api_url="https://api.syosetu.com/novelapi/api/"    
 else:
     filename ='Narou_18_ALL_OUTPUT_%s.xlsx'%now_day
+    sql_filename = 'Narou_18_ALL_OUTPUT_%s.sqlite3'%now_day
     api_url="https://api.syosetu.com/novel18api/api/"
+
+# データをSqlite3形式でも保存する
+is_save_sqlite = False
 
 #####　以上設定、以下関数　##############
     
@@ -50,7 +56,7 @@ def get_all_novel_info():
         payload = {'out': 'json','gzip':5,'opt':'weekly','lim':500,'lastup':"1073779200-"+str(lastup)}
         
         # なろうAPIにリクエスト
-        cnt = 0
+        cnt=0
         while cnt < 5:
             try:
                 res = requests.get(api_url, params=payload, timeout=30).content
@@ -90,10 +96,32 @@ def dump_to_excel(df):
     
     print("export_start",datetime.datetime.now())    
 
-    # .xlsx ファイル出力
-    writer = pd.ExcelWriter(filename,options={'strings_to_urls': False}, engine='xlsxwriter')
-    df.to_excel(writer, sheet_name="Sheet1")#Writerを通して書き込み
-    writer.close() 
+    try:
+        # .xlsx ファイル出力
+        writer = pd.ExcelWriter(filename,options={'strings_to_urls': False}, engine='xlsxwriter')
+        df.to_excel(writer, sheet_name="Sheet1")#Writerを通して書き込み
+        writer.close()
+        
+        print('取得成功数  ',len(df));
+        
+    except:
+        pass
+    
+    ### SQLite3に書き込む処理 (将来エクセルの上限行数を超えたときのため) ###
+    if is_save_sqlite == True or len(df) >= 1048576:
+        
+        # 接続DBファイルの指定
+        conn = sqlite3.connect(sql_filename)
+        conn.row_factory = sqlite3.Row 
+        c = conn.cursor()
+        
+        df.to_sql('novel_data', conn, if_exists='replace')
+        
+        c.close()
+        conn.close()
+        
+        print("Sqlite3形式でデータを保存しました")
+    
 
 #######　関数の実行を指定　##########
 print("start",datetime.datetime.now())
